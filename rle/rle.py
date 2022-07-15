@@ -10,7 +10,7 @@ def compress(data):
     >>> compress(b'aaaaabbbbbbcddefff')
     b'aa5bb6cdd2eff3'
     """
-    tobyte = struct.Struct('@B')
+    tobyte = struct.Struct('<B')
     out = io.BytesIO()
     run_start = 0
     run_char = b''
@@ -22,12 +22,15 @@ def compress(data):
             else:
                 out.write(run_char * length)
             run_start = i
-            run_char = c
+            run_char = tobyte.pack(c)
         elif length == 255:
             # Next repetition will make the number out of byte boundary.
             # Reset it.
             out.write(run_char*2 + tobyte.pack(length))
             run_start = i
+
+    out.seek(0)
+    return out.read()
 
 
 def decompress(data):
@@ -36,9 +39,10 @@ def decompress(data):
     >>> decompress(b'aa5bb6cdd2eff3')
     b'aaaaabbbbbbcddefff'
     """
-    frombyte = struct.Struct('@B')
+    frombyte = struct.Struct('<B')
     out = io.BytesIO()
     total_length = len(data)
+    i = 0
     while i < total_length:
         c = data[i]
         if i < total_length - 2 and c == data[i + 1]:
@@ -48,6 +52,9 @@ def decompress(data):
         else:
             out.write(c)
             i += 1
+
+    out.seek(0)
+    return out.read()
 
 
 if __name__ == '__main__':
