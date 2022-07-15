@@ -109,5 +109,6 @@ def _test():
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
-    _test()
+    failures = doctest.testmod()[0]
+    if failuers == 0:
+        _test()
