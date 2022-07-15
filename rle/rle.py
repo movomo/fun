@@ -28,6 +28,18 @@ def compress(data):
 
 def decompress(data):
     """Decompress rle-compressed data to original."""
+    frombyte = struct.Struct('@B')
+    out = io.BytesIO()
+    total_length = len(data)
+    while i < total_length:
+        c = data[i]
+        if i < total_length - 2 and c == data[i + 1]:
+            repeat = frombyte.unpack(data[i + 2])[0]
+            out.write(c * repeat)
+            i += 2
+        else:
+            out.write(c)
+            i += 1
 
 
 if __name__ == '__main__':
