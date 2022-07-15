@@ -62,6 +62,31 @@ def decompress(data):
     return out.read()
 
 
+def _test():
+    import hashlib
+    import time
+    from pathlib import Path
+
+    with Path(__file__).with_name('test.bmp').open('rb') as image_r:
+        data = image_r.read()
+
+    # hash the data for verification
+    input_hash = hashlib.sha256(data).hexdigest()
+    input_size = len(data)
+
+    start = time.process_time_ns()
+    data = compress(data)
+    ratio = len(data) / input_size
+    data = decompress(data)
+    end = time.process_time_ns()
+
+    time_diff = (end - start) / 1000000000
+    output_hash = hashlib.sha256(data).hexdigest()
+    print(f"Done in {time_diff:.4f} seconds. (ratio: {ratio:.2f})")
+    assert input_hash == output_hash
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
+    _test()
