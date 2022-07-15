@@ -30,7 +30,7 @@ def benchmark(module):
 
 
 def main():
-    # print(f"cpython: {benchmark(rle)}")
+    print(f"cpython: {benchmark(rle)}")
     print(f"cython unmodified: {benchmark(crle)}")
 
 
