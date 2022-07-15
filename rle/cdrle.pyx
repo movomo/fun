@@ -3,6 +3,9 @@
 import io
 import struct
 
+from libc.stdlib cimport malloc
+from libc.string cimport strcpy
+
 
 def compress(data):
     """Compress data with simple rle. (same char escaping)
@@ -14,6 +17,10 @@ def compress(data):
     out = io.BytesIO()
     run_start = 0
     run_char = 0
+    
+    cdef unsigned int i
+    cdef unsigned char c
+    cdef unsigned char length
     for i, c in enumerate(data):
         length = i - run_start
         if c != run_char:
@@ -39,27 +46,41 @@ def compress(data):
     return out.read()
 
 
-def decompress(data):
+cpdef bytes decompress(char* data):
     """Decompress rle-compressed data to original.
 
     >>> decompress(b'aa\\x05bb\\x06cdd\\x02eff\\x03g')
     b'aaaaabbbbbbcddefffg'
     """
-    tobyte = struct.Struct('<B')
-    out = io.BytesIO()
-    total_length = len(data)
-    i = 0
+    cdef char* out = <char*> malloc(data[0] * sizeof(char))
+    cdef unsigned int i = 1
+    cdef unsigned int total_length = len(data) - 1
+    cdef unsigned int j = 0
+    cdef unsigned int k = 0
+    cdef char c
     while i < total_length:
         c = data[i]
-        if i < total_length - 2 and c == data[i + 1]:
-            out.write(tobyte.pack(c) * data[i + 2])
+        if i < total_length - 2:
+            if c == data[i + 1]:
+                # out.append(c * data[i + 2])
+                k = 0
+                while k < data[i + 2]:
+                    out[j] = c
+                    j += 1
+                    k += 1
+            else:
+                out[j] = c
+                out[j + 1] = data[i + 1]
+                out[j + 2] = data[i + 2]
+                j += 3
             i += 3
         else:
-            out.write(tobyte.pack(c))
             i += 1
+            j += 1
+            out[j] = c
 
-    out.seek(0)
-    return out.read()
+    result = <bytes> out[:data[0]]
+    return result
 
 
 def _test():
