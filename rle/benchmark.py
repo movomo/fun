@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 import rle
+import crle
 
 
 def benchmark(module):
@@ -29,7 +30,8 @@ def benchmark(module):
 
 
 def main():
-    print(f"cpython: {benchmark(rle)}")
+    # print(f"cpython: {benchmark(rle)}")
+    print(f"cython unmodified: {benchmark(crle)}")
 
 
 if __name__ == '__main__':
