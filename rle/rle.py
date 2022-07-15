@@ -5,7 +5,11 @@ import struct
 
 
 def compress(data):
-    """Compress data with simple rle. (same char escaping)"""
+    """Compress data with simple rle. (same char escaping)
+
+    >>> compress(b'aaaaabbbbbbcddefff')
+    b'aa5bb6cdd2eff3'
+    """
     tobyte = struct.Struct('@B')
     out = io.BytesIO()
     run_start = 0
@@ -27,7 +31,11 @@ def compress(data):
 
 
 def decompress(data):
-    """Decompress rle-compressed data to original."""
+    """Decompress rle-compressed data to original.
+
+    >>> decompress(b'aa5bb6cdd2eff3')
+    b'aaaaabbbbbbcddefff'
+    """
     frombyte = struct.Struct('@B')
     out = io.BytesIO()
     total_length = len(data)
