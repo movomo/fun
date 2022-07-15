@@ -29,7 +29,7 @@ def benchmark(module):
 
 
 def main():
-    print(f"py rle: {benchmark(rle)}")
+    print(f"cpython: {benchmark(rle)}")
 
 
 if __name__ == '__main__':
