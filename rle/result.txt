@@ -1,0 +1,10 @@
+Done in 95.8438 seconds. (ratio: 1.00)
+cpython: True
+Done in 76.8281 seconds. (ratio: 1.00)
+cython unmodified: True
+Done in 1.9062 seconds. (ratio: 1.00)
+cython cdef: True
+Done in 4.9844 seconds. (ratio: 1.00)
+pypy: True
+
+Conclusion: pypy is awesome
