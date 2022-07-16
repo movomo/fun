@@ -7,6 +7,7 @@ from pathlib import Path
 
 import rle
 import crle
+import cdrle
 
 
 def benchmark(module):
@@ -30,8 +31,9 @@ def benchmark(module):
 
 
 def main():
-    print(f"cpython: {benchmark(rle)}")
-    print(f"cython unmodified: {benchmark(crle)}")
+    # print(f"cpython: {benchmark(rle)}")
+    # print(f"cython unmodified: {benchmark(crle)}")
+    print(f"cython cdef: {benchmark(cdrle)}")
 
 
 if __name__ == '__main__':

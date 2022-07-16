@@ -1,85 +1,99 @@
 #! /usr/bin/env python3
 
-import io
+# import io
 import struct
 
-from libc.stdlib cimport malloc
-from libc.string cimport strcpy
+from libc.stdlib cimport malloc, free
+# from libc.string cimport strcpy
 
 
-def compress(data):
+cpdef bytes compress(bytes data):
     """Compress data with simple rle. (same char escaping)
 
     >>> compress(b'aaaaabbbbbbcddefffg')
-    b'aa\\x05bb\\x06cdd\\x02eff\\x03g'
+    b'\\x13\\x00\\x00\\x00aa\\x05bb\\x06cdd\\x02eff\\x03g'
     """
-    tobyte = struct.Struct('<B')
-    out = io.BytesIO()
-    run_start = 0
-    run_char = 0
+    # We run away if the file size exceeds 4 gigs.
+    cdef unsigned long long total_length = len(data)
+    if total_length > 2 ** 32:
+        raise ValueError('file is too big')
     
-    cdef unsigned int i
-    cdef unsigned char c
+    cdef unsigned char* data_ = <unsigned char*> data
+    cdef bytearray out = bytearray()
+    cdef unsigned int run_start = 0
+    cdef unsigned int i = 0
     cdef unsigned char length
-    for i, c in enumerate(data):
+    cdef unsigned char run_char = 0
+    cdef unsigned char c
+    while i < total_length:
+        c = data_[i]
         length = i - run_start
         if c != run_char:
             if length >= 2:
-                out.write(tobyte.pack(run_char)*2 + tobyte.pack(length))
-            else:
-                out.write(tobyte.pack(run_char) * length)
+                out.append(run_char)
+                out.append(run_char)
+                out.append(length)
+            elif length == 1:
+                out.append(run_char)
             run_start = i
             run_char = c
         elif length == 255:
             # Next repetition will make the number out of byte boundary.
             # Reset it.
-            out.write(tobyte.pack(run_char)*2 + tobyte.pack(length))
+            out.append(run_char)
+            out.append(run_char)
+            out.append(length)
             run_start = i
+        i += 1
     else:
-        length = len(data) - run_start
+        length = total_length - run_start
         if length >= 2:
-            out.write(tobyte.pack(run_char)*2 + tobyte.pack(length))
-        else:
-            out.write(tobyte.pack(run_char) * length)
+            out.append(run_char)
+            out.append(run_char)
+            out.append(length)
+        elif length == 1:
+            out.append(run_char)
 
-    out.seek(0)
-    return out.read()
+    return struct.pack('<L', total_length) + bytes(out)
 
 
-cpdef bytes decompress(char* data):
+cpdef bytes decompress(bytes data):
     """Decompress rle-compressed data to original.
 
-    >>> decompress(b'aa\\x05bb\\x06cdd\\x02eff\\x03g')
+    >>> decompress(b'\\x13\\x00\\x00\\x00aa\\x05bb\\x06cdd\\x02eff\\x03g')
     b'aaaaabbbbbbcddefffg'
     """
-    cdef char* out = <char*> malloc(data[0] * sizeof(char))
-    cdef unsigned int i = 1
-    cdef unsigned int total_length = len(data) - 1
+    cdef unsigned int original_length = struct.unpack('<L', data[:4])[0]
+    cdef unsigned char* out = <unsigned char*> malloc(original_length * sizeof(char))
+    if not out:
+        raise MemoryError()
+        
+    cdef unsigned int total_length = len(data)
+    cdef unsigned int i = 4
     cdef unsigned int j = 0
     cdef unsigned int k = 0
-    cdef char c
+    cdef unsigned char c
+    cdef unsigned char* data_ = <unsigned char*> data
     while i < total_length:
-        c = data[i]
-        if i < total_length - 2:
-            if c == data[i + 1]:
-                # out.append(c * data[i + 2])
-                k = 0
-                while k < data[i + 2]:
-                    out[j] = c
-                    j += 1
-                    k += 1
-            else:
+        c = data_[i]
+        if i < total_length - 2 and c == data_[i + 1]:
+            k = 0
+            while k < data_[i + 2]:
+                if j >= original_length:
+                    raise ValueError('incorrect format')
                 out[j] = c
-                out[j + 1] = data[i + 1]
-                out[j + 2] = data[i + 2]
-                j += 3
+                j += 1
+                k += 1
             i += 3
         else:
+            if j >= original_length:
+                raise ValueError('incorrect format')
+            out[j] = c
             i += 1
             j += 1
-            out[j] = c
 
-    result = <bytes> out[:data[0]]
+    cdef bytes result = out[:original_length]
+    free(out)
     return result
 
 
@@ -110,5 +124,5 @@ def _test():
 if __name__ == '__main__':
     import doctest
     failures = doctest.testmod()[0]
-    if failuers == 0:
+    if failures == 0:
         _test()
