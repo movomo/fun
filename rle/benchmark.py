@@ -1,13 +1,17 @@
 #! /usr/bin/env python3
 
 import hashlib
+import sys
 import time
 
 from pathlib import Path
 
-import rle
-import crle
-import cdrle
+try:
+    import rle
+    import crle
+    import cdrle
+except ImportError:
+    pass
 
 
 def benchmark(module):
@@ -31,9 +35,12 @@ def benchmark(module):
 
 
 def main():
-    # print(f"cpython: {benchmark(rle)}")
-    # print(f"cython unmodified: {benchmark(crle)}")
-    print(f"cython cdef: {benchmark(cdrle)}")
+    if hasattr(sys, 'pypy_version_info'):
+        print(f"pypy: {benchmark(rle)}")
+    else:
+        print(f"cpython: {benchmark(rle)}")
+        print(f"cython unmodified: {benchmark(crle)}")
+        print(f"cython cdef: {benchmark(cdrle)}")
 
 
 if __name__ == '__main__':
