@@ -5,7 +5,7 @@ import typing as T
 
 from enum import Enum, auto
 
-from ast import AST, BinOp, Num, Token
+from ast import AST, BinOp, Num, Token, NodeVisitor
 
 
 class CalcError(Exception):
@@ -163,6 +163,30 @@ class Parser(object):
         return self.expr()
 
 
+class Interpreter(NodeVisitor):
+    parser: Parser
+
+    def __init__(self, parser: Parser) -> None:
+        self.parser = parser
+
+    def interpret(self):
+        return self.visit(self.parser.parse())
+
+    def visit_BinOp(self, node: AST):
+        match node.op.type:
+            case TokenType.ADD:
+                return self.visit(node.left) + self.visit(node.right)
+            case TokenType.SUB:
+                return self.visit(node.left) - self.visit(node.right)
+            case TokenType.MUL:
+                return self.visit(node.left) * self.visit(node.right)
+            case TokenType.DIV:
+                return self.visit(node.left) / self.visit(node.right)
+
+    def visit_Num(self, node: Num) -> int:
+        return node.value
+
+
 def main():
     while True:
         text = input('calc> ')
@@ -176,7 +200,8 @@ def main():
         try:
             lexer = Lexer(text)
             parser = Parser(lexer)
-            result = parser.parse()
+            interpreter = Interpreter(parser)
+            result = interpreter.interpret()
         except CalcError as why:
             traceback.print_exception(why)
         else:
