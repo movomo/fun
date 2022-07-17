@@ -13,6 +13,8 @@ class CalcError(Exception):
 class TokenType(Enum):
     EOF = auto()
     LITERAL = auto()
+    LPAREN = auto()
+    RPAREN = auto()
     MUL = auto()
     DIV = auto()
     ADD = auto()
@@ -42,7 +44,7 @@ class Lexer(object):
         self.char = self.text[self.pos]
 
     def error(self):
-        raise CalcError("invalid character")
+        raise CalcError(f"invalid character {self.char}")
 
     def advance(self):
         self.pos += 1
@@ -69,19 +71,27 @@ class Lexer(object):
                 continue
 
             token = None
-            if self.char.isdigit():
+            char = self.char
+
+            if char.isdigit():
                 token = Token(TokenType.LITERAL, self.integer())
-            elif self.char == '*':
-                token = Token(TokenType.MUL, self.char)
+            elif char == '(':
+                token = Token(TokenType.LPAREN, char)
                 self.advance()
-            elif self.char == '/':
-                token = Token(TokenType.DIV, self.char)
+            elif char == ')':
+                token = Token(TokenType.RPAREN, char)
                 self.advance()
-            elif self.char == '+':
-                token = Token(TokenType.ADD, self.char)
+            elif char == '*':
+                token = Token(TokenType.MUL, char)
                 self.advance()
-            elif self.char == '-':
-                token = Token(TokenType.SUB, self.char)
+            elif char == '/':
+                token = Token(TokenType.DIV, char)
+                self.advance()
+            elif char == '+':
+                token = Token(TokenType.ADD, char)
+                self.advance()
+            elif char == '-':
+                token = Token(TokenType.SUB, char)
                 self.advance()
             else:
                 self.error()
@@ -110,16 +120,21 @@ class Interpreter(object):
             self.error()
 
     def factor(self) -> int:
-        """factor: LITERAL"""
+        """factor: LITERAL | ( LPAREN expr RPAREN)"""
         token = self.token
-        self.eat(TokenType.LITERAL)
-        return token.value
+        if token.type == TokenType.LITERAL:
+            self.eat(TokenType.LITERAL)
+            return token.value
+        # elif token.type == TokenType.LPAREN:
+        else:
+            self.eat(TokenType.LPAREN)
+            result = self.expr()
+            self.eat(TokenType.RPAREN)
+            return result
 
     def term(self):
         """term: factor ( ( MUL | DIV ) factor )*"""
         result = self.factor()
-        if not self.token.type in {TokenType.MUL, TokenType.DIV, TokenType.EOF}:
-            self.error()
         while self.token.type in {TokenType.MUL, TokenType.DIV}:
             token = self.token
 
@@ -138,11 +153,9 @@ class Interpreter(object):
 
         expr: term ( ( ADD | SUB ) term )*
         term: factor ( ( MUL | DIV ) factor )*
-        factor: LITERAL
+        factor: LITERAL | ( LPAREN expr RPAREN)
         """
         result = self.term()
-        if not self.token.type in {TokenType.ADD, TokenType.SUB, TokenType.EOF}:
-            self.error()
         while self.token.type in {TokenType.ADD, TokenType.SUB}:
             token = self.token
 
