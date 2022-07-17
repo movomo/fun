@@ -21,18 +21,6 @@ class TokenType(Enum):
     SUB = auto()
 
 
-class Token(object):
-    type: TokenType
-    value: T.Any
-
-    def __init__(self, type: TokenType, value) -> None:
-        self.type = type
-        self.value = value
-
-    def __repr__(self):
-        return f"{type(self).__name__}({self.type}, {self.value!r})"
-
-
 class Lexer(object):
     text: str
     pos: int
