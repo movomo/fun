@@ -5,6 +5,8 @@ import typing as T
 
 from enum import Enum, auto
 
+from ast import AST, BinOp, Num, Token
+
 
 class CalcError(Exception):
     ...
@@ -90,7 +92,7 @@ class Lexer(object):
         return Token(TokenType.EOF, None)
 
 
-class Interpreter(object):
+class Parser(object):
     lexer: Lexer
     token: Token | None
 
@@ -112,29 +114,29 @@ class Interpreter(object):
         token = self.token
         if token.type == TokenType.LITERAL:
             self.eat(TokenType.LITERAL)
-            return token.value
+            return Num(token)
         # elif token.type == TokenType.LPAREN:
         else:
             self.eat(TokenType.LPAREN)
-            result = self.expr()
+            node = self.expr()
             self.eat(TokenType.RPAREN)
-            return result
+            return node
 
     def term(self):
         """term: factor ( ( MUL | DIV ) factor )*"""
-        result = self.factor()
+        node = self.factor()
         while self.token.type in {TokenType.MUL, TokenType.DIV}:
             token = self.token
 
             match token.type:
                 case TokenType.MUL:
                     self.eat(TokenType.MUL)
-                    result *= self.factor()
                 case TokenType.DIV:
                     self.eat(TokenType.DIV)
-                    result /= self.factor()
 
-        return result
+            node = BinOp(node, token, self.factor())
+
+        return node
 
     def expr(self):
         """expr: term ( ( ADD | SUB ) term )*
@@ -143,19 +145,22 @@ class Interpreter(object):
         term: factor ( ( MUL | DIV ) factor )*
         factor: LITERAL | ( LPAREN expr RPAREN)
         """
-        result = self.term()
+        node = self.term()
         while self.token.type in {TokenType.ADD, TokenType.SUB}:
             token = self.token
 
             match token.type:
                 case TokenType.ADD:
                     self.eat(TokenType.ADD)
-                    result += self.term()
                 case TokenType.SUB:
                     self.eat(TokenType.SUB)
-                    result -= self.term()
 
-        return result
+            node = BinOp(node, token, self.term())
+
+        return node
+
+    def parse(self):
+        return self.expr()
 
 
 def main():
@@ -170,8 +175,8 @@ def main():
 
         try:
             lexer = Lexer(text)
-            interpreter = Interpreter(lexer)
-            result = interpreter.expr()
+            parser = Parser(lexer)
+            result = parser.parse()
         except CalcError as why:
             traceback.print_exception(why)
         else:

@@ -34,3 +34,10 @@ class Num(AST):
     def __init__(self, token: Token):
         self.token = token
         self.value = token.value
+
+
+class NodeVisitor(object):
+    def visit(self, node: AST):
+        method_name = f'visit_{type(node).__name__}'
+        visitor = getattr(self, method_name)
+        return visitor(node)
