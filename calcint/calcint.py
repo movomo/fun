@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import traceback
 import typing as T
 
 from enum import Enum, auto
@@ -117,6 +118,8 @@ class Interpreter(object):
     def term(self):
         """term: factor ( ( MUL | DIV ) factor )*"""
         result = self.factor()
+        if not self.token.type in {TokenType.MUL, TokenType.DIV, TokenType.EOF}:
+            self.error()
         while self.token.type in {TokenType.MUL, TokenType.DIV}:
             token = self.token
 
@@ -137,8 +140,9 @@ class Interpreter(object):
         term: factor ( ( MUL | DIV ) factor )*
         factor: LITERAL
         """
-
         result = self.term()
+        if not self.token.type in {TokenType.ADD, TokenType.SUB, TokenType.EOF}:
+            self.error()
         while self.token.type in {TokenType.ADD, TokenType.SUB}:
             token = self.token
 
@@ -162,13 +166,13 @@ def main():
             print('bye')
             break
 
-        lexer = Lexer(text)
-        interpreter = Interpreter(lexer)
 
         try:
+            lexer = Lexer(text)
+            interpreter = Interpreter(lexer)
             result = interpreter.expr()
         except CalcError as why:
-            print(why)
+            traceback.print_exception(why)
         else:
             print(result)
 
