@@ -5,7 +5,7 @@ import typing as T
 
 from enum import Enum, auto
 
-from ast import AST, BinOp, Num, Token, NodeVisitor
+from ast import AST, BinOp, UnaryOp, Num, Token, NodeVisitor
 
 
 class CalcError(Exception):
@@ -110,9 +110,17 @@ class Parser(object):
             self.error()
 
     def factor(self) -> int:
-        """factor: ( PLUS | MINUS ) factor | LITERAL | ( LPAREN expr RPAREN)"""
+        """factor: ( ADD | SUB ) factor | LITERAL | ( LPAREN expr RPAREN)"""
         token = self.token
-        if token.type == TokenType.LITERAL:
+        if token.type == TokenType.ADD:
+            self.eat(TokenType.ADD)
+            node = UnaryOp(token, self.factor())
+            return node
+        elif token.type == TokenType.SUB:
+            self.eat(TokenType.SUB)
+            node = UnaryOp(token, self.factor())
+            return node
+        elif token.type == TokenType.LITERAL:
             self.eat(TokenType.LITERAL)
             return Num(token)
         # elif token.type == TokenType.LPAREN:
@@ -143,7 +151,7 @@ class Parser(object):
 
         expr: term ( ( ADD | SUB ) term )*
         term: factor ( ( MUL | DIV ) factor )*
-        factor: ( PLUS | MINUS ) factor | LITERAL | ( LPAREN expr RPAREN)
+        factor: ( ADD | SUB ) factor | LITERAL | ( LPAREN expr RPAREN)
         """
         node = self.term()
         while self.token.type in {TokenType.ADD, TokenType.SUB}:
