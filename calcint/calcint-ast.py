@@ -180,6 +180,14 @@ class Interpreter(NodeVisitor):
     def interpret(self):
         return self.visit(self.parser.parse())
 
+    def visit_UnaryOp(self, node: AST):
+        value = self.visit(node.children[0])
+        match node.op.type:
+            case TokenType.ADD:
+                return value
+            case TokenType.SUB:
+                return -value
+
     def visit_BinOp(self, node: AST):
         left = self.visit(node.children[0])
         right = self.visit(node.children[1])
