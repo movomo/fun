@@ -50,6 +50,12 @@ class TOKEN(Enum):
     ID = auto()
 
 
+RESERVED_KEYWORDS = {
+    'BEGIN': Token(TOKEN.BEGIN),
+    'END': Token(TOKEN.END),
+}
+
+
 class Lexer(object):
     text: str
     pos: int
@@ -90,7 +96,19 @@ class Lexer(object):
             token = None
             char = self.char
 
-            if char.isdigit():
+            if char.isalpha():
+                token = self._id()
+                
+            elif char == ':' and self.peek() == '=':
+                self.advance()
+                self.advance()
+                token = Token(TOKEN.ASSIGN)
+            elif char == ';':
+                token = Token(TOKEN.SEMI)
+            elif char == '.':
+                token = Token(TOKEN.DOT)
+                
+            elif char.isdigit():
                 token = Token(TOKEN.INTEGER, self.integer())
             elif char == '(':
                 token = Token(TOKEN.LPAREN, char)
@@ -122,6 +140,16 @@ class Lexer(object):
         peek_pos = self.pos + 1
         if peek_pos <= len(self.text) - 1:
             return self.text[peek_pos]
+
+    def _id(self):
+        chars = []
+        while self.char is not None and self.char.isalnum():
+            chars.append(self.char)
+            self.advance()
+            
+        identifier = ''.join(chars)
+        token = RESERVED_KEYWORDS.get(identifier, Token(TOKEN.ID, identifier))
+        return token
 
 
 class Parser(object):
