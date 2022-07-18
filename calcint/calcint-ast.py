@@ -134,7 +134,7 @@ class Parser(object):
                 case TokenType.DIV:
                     self.eat(TokenType.DIV)
 
-            node = BinOp(node, token, self.factor())
+            node = BinOp(token, node, self.factor())
 
         return node
 
@@ -155,7 +155,7 @@ class Parser(object):
                 case TokenType.SUB:
                     self.eat(TokenType.SUB)
 
-            node = BinOp(node, token, self.term())
+            node = BinOp(token, node, self.term())
 
         return node
 
@@ -173,15 +173,18 @@ class Interpreter(NodeVisitor):
         return self.visit(self.parser.parse())
 
     def visit_BinOp(self, node: AST):
+        left = self.visit(node.children[0])
+        right = self.visit(node.children[1])
+
         match node.op.type:
             case TokenType.ADD:
-                return self.visit(node.left) + self.visit(node.right)
+                return left + right
             case TokenType.SUB:
-                return self.visit(node.left) - self.visit(node.right)
+                return left - right
             case TokenType.MUL:
-                return self.visit(node.left) * self.visit(node.right)
+                return left * right
             case TokenType.DIV:
-                return self.visit(node.left) / self.visit(node.right)
+                return left / right
 
     def visit_Num(self, node: Num) -> int:
         return node.value
@@ -192,7 +195,7 @@ def main():
         text = input('calc> ')
         if not text:
             continue
-        elif text.casefold() == 'quit':
+        elif text.casefold() == 'bye':
             print('bye')
             break
 

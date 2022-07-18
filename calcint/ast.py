@@ -18,16 +18,14 @@ class Token(object):
 class AST(object):
     token: Token
     op: Token
-    left: AST | None
-    right: AST | None
+    children: T.Sequence[AST]
 
 
 class BinOp(AST):
-    def __init__(self, left: Token, op: Token, right: Token) -> None:
+    def __init__(self, op: Token, left: Token, right: Token) -> None:
         self.token = op
         self.op = op
-        self.left = left
-        self.right = right
+        self.children = [left, right];
 
 
 class Num(AST):
