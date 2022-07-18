@@ -18,20 +18,29 @@ class Token(object):
 class AST(object):
     token: Token
     op: Token
+    value: T.Any
     children: T.Sequence[AST]
+
+    def __init__(self, token: Token, *nodes: T.Iterable[AST]) -> None:
+        self.token = token
+        self.op = token
+        self.value = token.value
+        self.children = list(nodes)
+
+
+class UnaryOp(AST):
+    def __init__(self, token, child: AST) -> None:
+        super().__init__(token, child)
 
 
 class BinOp(AST):
-    def __init__(self, op: Token, left: Token, right: Token) -> None:
-        self.token = op
-        self.op = op
-        self.children = [left, right];
+    def __init__(self, token: Token, left: Token, right: Token) -> None:
+        super().__init__(token, left, right)
 
 
 class Num(AST):
-    def __init__(self, token: Token):
-        self.token = token
-        self.value = token.value
+    def __init__(self, token: Token) -> None:
+        super().__init__(token)
 
 
 class NodeVisitor(object):

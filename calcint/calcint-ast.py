@@ -110,7 +110,7 @@ class Parser(object):
             self.error()
 
     def factor(self) -> int:
-        """factor: LITERAL | ( LPAREN expr RPAREN)"""
+        """factor: ( PLUS | MINUS ) factor | LITERAL | ( LPAREN expr RPAREN)"""
         token = self.token
         if token.type == TokenType.LITERAL:
             self.eat(TokenType.LITERAL)
@@ -143,7 +143,7 @@ class Parser(object):
 
         expr: term ( ( ADD | SUB ) term )*
         term: factor ( ( MUL | DIV ) factor )*
-        factor: LITERAL | ( LPAREN expr RPAREN)
+        factor: ( PLUS | MINUS ) factor | LITERAL | ( LPAREN expr RPAREN)
         """
         node = self.term()
         while self.token.type in {TokenType.ADD, TokenType.SUB}:
