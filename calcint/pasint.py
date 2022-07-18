@@ -118,6 +118,11 @@ class Lexer(object):
 
         return Token(TOKEN.EOF, None)
 
+    def peek(self):
+        peek_pos = self.pos + 1
+        if peek_pos <= len(self.text) - 1:
+            return self.text[peek_pos]
+
 
 class Parser(object):
     lexer: Lexer
