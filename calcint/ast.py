@@ -31,9 +31,15 @@ class AST(object):
         self.value = token.value
         self.children = list(nodes)
 
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.token}, *{self.children})'
+
 
 class Compound(AST):
     """Represents a 'BEGIN ... END' block."""
+    def __init__(self, *nodes: T.Iterable[AST]) -> None:
+        self.token = self.op = self.value = None
+        self.children = list(nodes)
 
 
 class Assign(AST):
@@ -49,7 +55,8 @@ class Var(AST):
 class NoOp(AST):
     """Represents an *empty* statement."""
     def __init__(self) -> None:
-        ...
+        self.token = self.op = self.value = None
+        self.children = list()
 
 class UnaryOp(AST):
     def __init__(self, token, child: AST) -> None:
@@ -69,6 +76,7 @@ class Num(AST):
 
 class NodeVisitor(object):
     def visit(self, node: AST):
+        print(node)
         method_name = f'visit_{type(node).__name__}'
         visitor = getattr(self, method_name)
         return visitor(node)
