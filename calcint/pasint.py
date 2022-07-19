@@ -305,24 +305,32 @@ class Parser(object):
 
 class Interpreter(NodeVisitor):
     parser: Parser
+    GLOBAL_SCOPE: dict[str, T.any]
 
     def __init__(self, parser: Parser) -> None:
         self.parser = parser
+        self.GLOBAL_SCOPE = {}
 
     def interpret(self):
         return self.visit(self.parser.parse())
 
     def visit_Compound(self, node: AST):
-        ...
+        for child in node.children:
+            self.visit(child)
 
     def visit_Assign(self, node: AST):
-        ...
+        name = node.children[0].value
+        self.GLOBAL_SCOPE[name] = self.visit(node.children[1])
 
     def visit_Var(self, node: AST):
-        ...
+        name = node.value
+        if name in self.GLOBAL_SCOPE:
+            return self.GLOBAL_SCOPE[name]
+        else:
+            raise NameError(name)
 
     def visit_NoOp(self, node: AST):
-        ...
+        return
 
     def visit_UnaryOp(self, node: AST):
         value = self.visit(node.children[0])
