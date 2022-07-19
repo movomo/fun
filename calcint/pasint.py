@@ -103,7 +103,7 @@ class Lexer(object):
 
             if char.isalpha():
                 token = self._id()
-                
+
             elif char == ':' and self.peek() == '=':
                 self.advance()
                 self.advance()
@@ -112,7 +112,7 @@ class Lexer(object):
                 token = Token(TOKEN.SEMI)
             elif char == '.':
                 token = Token(TOKEN.DOT)
-                
+
             elif char.isdigit():
                 token = Token(TOKEN.INTEGER, self.integer())
             elif char == '(':
@@ -151,7 +151,7 @@ class Lexer(object):
         while self.char is not None and self.char.isalnum():
             chars.append(self.char)
             self.advance()
-            
+
         identifier = ''.join(chars)
         token = RESERVED_KEYWORDS.get(identifier, Token(TOKEN.ID, identifier))
         return token
@@ -179,16 +179,28 @@ class Parser(object):
         node = self.compound_statement()
         self.eat(DOT)
         return node
-        
+
     def compound_statement(self):
         """compound_statement : BEGIN statement_list END"""
         self.eat(TOKEN.BEGIN)
         nodes = self.statement_list()
         self.eat(TOKEN.END)
-        
+
         root = Compound(None, *nodes)
-        
+
         return root
+
+    def statement_list(self):
+        """statement_list : statement | statement SEMI statement_list"""
+        nodes = [self.statement()]
+        while self.token.type == TOKEN.SEMI:
+            self.eat(TOKEN.SEMI)
+            nodes.append(self.statement())
+
+        if self.token.type == TOKEN.ID:
+            self.error()
+
+        return nodes
 
     def factor(self):
         """factor: ( PLUS | MINUS ) factor | INTEGER | ( LPAREN expr RPAREN)"""
