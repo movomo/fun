@@ -25,7 +25,12 @@ import typing as T
 
 from enum import Enum, auto
 
-from ast import AST, BinOp, UnaryOp, Num, Token, NodeVisitor
+from ast import (
+    AST,
+    Compound, Assign, Var,
+    NoOp, BinOp, UnaryOp, Num,
+    Token, NodeVisitor,
+)
 
 
 class CalcError(Exception):
@@ -169,7 +174,23 @@ class Parser(object):
         else:
             self.error()
 
-    def factor(self) -> int:
+    def program(self):
+        """program : compound_statement DOT"""
+        node = self.compound_statement()
+        self.eat(DOT)
+        return node
+        
+    def compound_statement(self):
+        """compound_statement : BEGIN statement_list END"""
+        self.eat(TOKEN.BEGIN)
+        nodes = self.statement_list()
+        self.eat(TOKEN.END)
+        
+        root = Compound(None, *nodes)
+        
+        return root
+
+    def factor(self):
         """factor: ( PLUS | MINUS ) factor | INTEGER | ( LPAREN expr RPAREN)"""
         token = self.token
         if token.type == TOKEN.PLUS:
