@@ -224,6 +224,12 @@ class Parser(object):
         node = Assign(self.token, left, right)
         return node
 
+    def variable(self):
+        """variable: ID"""
+        node = Var(self.token)
+        self.eat(ID)
+        return node
+
     def factor(self):
         """factor: ( PLUS | MINUS ) factor | INTEGER | ( LPAREN expr RPAREN)"""
         token = self.token
