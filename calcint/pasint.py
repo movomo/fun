@@ -110,8 +110,10 @@ class Lexer(object):
                 token = Token(TOKEN.ASSIGN)
             elif char == ';':
                 token = Token(TOKEN.SEMI)
+                self.advance()
             elif char == '.':
                 token = Token(TOKEN.DOT)
+                self.advance()
 
             elif char.isdigit():
                 token = Token(TOKEN.INTEGER, self.integer())
@@ -177,7 +179,7 @@ class Parser(object):
     def program(self):
         """program : compound_statement DOT"""
         node = self.compound_statement()
-        self.eat(DOT)
+        self.eat(TOKEN.DOT)
         return node
 
     def compound_statement(self):
@@ -186,7 +188,7 @@ class Parser(object):
         nodes = self.statement_list()
         self.eat(TOKEN.END)
 
-        root = Compound(None, *nodes)
+        root = Compound(*nodes)
 
         return root
 
@@ -227,7 +229,7 @@ class Parser(object):
     def variable(self):
         """variable: ID"""
         node = Var(self.token)
-        self.eat(ID)
+        self.eat(TOKEN.ID)
         return node
 
     def empty(self):
@@ -257,7 +259,7 @@ class Parser(object):
             self.eat(TOKEN.RPAREN)
         else:
             node = self.variable()
-            
+
         return node
 
     def term(self):
@@ -301,11 +303,12 @@ class Parser(object):
         node = self.program()
         if self.token.type != TOKEN.EOF:
             self.error()
+        return node
 
 
 class Interpreter(NodeVisitor):
     parser: Parser
-    GLOBAL_SCOPE: dict[str, T.any]
+    GLOBAL_SCOPE: dict[str, T.Any]
 
     def __init__(self, parser: Parser) -> None:
         self.parser = parser
