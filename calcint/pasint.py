@@ -216,6 +216,14 @@ class Parser(object):
 
         return node
 
+    def assignment_statement(self):
+        """assignment_statement : variable ASSIGN expr"""
+        left = self.variable()
+        self.eat(TOKEN.ASSIGN)
+        right = self.expr()
+        node = Assign(self.token, left, right)
+        return node
+
     def factor(self):
         """factor: ( PLUS | MINUS ) factor | INTEGER | ( LPAREN expr RPAREN)"""
         token = self.token
