@@ -298,7 +298,9 @@ class Parser(object):
         return node
 
     def parse(self):
-        return self.program()
+        node = self.program()
+        if self.token.type != TOKEN.EOF:
+            self.error()
 
 
 class Interpreter(NodeVisitor):
