@@ -318,7 +318,7 @@ class Interpreter(NodeVisitor):
     def visit_Assign(self, node: AST):
         ...
 
-    def visit_var(self, node: AST):
+    def visit_Var(self, node: AST):
         ...
 
     def visit_NoOp(self, node: AST):
