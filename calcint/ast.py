@@ -48,6 +48,8 @@ class Var(AST):
 
 class NoOp(AST):
     """Represents an *empty* statement."""
+    def __init__(self) -> None:
+        ...
 
 class UnaryOp(AST):
     def __init__(self, token, child: AST) -> None:

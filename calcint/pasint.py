@@ -230,6 +230,10 @@ class Parser(object):
         self.eat(ID)
         return node
 
+    def empty(self):
+        """"""
+        return NoOp()
+
     def factor(self):
         """factor: ( PLUS | MINUS ) factor | INTEGER | ( LPAREN expr RPAREN)"""
         token = self.token
