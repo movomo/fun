@@ -298,7 +298,7 @@ class Parser(object):
         return node
 
     def parse(self):
-        return self.expr()
+        return self.program()
 
 
 class Interpreter(NodeVisitor):
@@ -309,6 +309,18 @@ class Interpreter(NodeVisitor):
 
     def interpret(self):
         return self.visit(self.parser.parse())
+
+    def visit_Compound(self, node: AST):
+        ...
+
+    def visit_Assign(self, node: AST):
+        ...
+
+    def visit_var(self, node: AST):
+        ...
+
+    def visit_NoOp(self, node: AST):
+        ...
 
     def visit_UnaryOp(self, node: AST):
         value = self.visit(node.children[0])
