@@ -202,6 +202,20 @@ class Parser(object):
 
         return nodes
 
+    def statement(self):
+        """statement : compound_statement
+                     | assignment_statement
+                     | empty
+        """
+        if self.token.type == TOKEN.BEGIN:
+            node = self.compound_statement()
+        elif self.token.type == TOKEN.ID:
+            node = self.assignment_statement()
+        else:
+            node = self.empty()
+
+        return node
+
     def factor(self):
         """factor: ( PLUS | MINUS ) factor | INTEGER | ( LPAREN expr RPAREN)"""
         token = self.token
