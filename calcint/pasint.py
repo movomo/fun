@@ -235,25 +235,30 @@ class Parser(object):
         return NoOp()
 
     def factor(self):
-        """factor: ( PLUS | MINUS ) factor | INTEGER | ( LPAREN expr RPAREN)"""
+        """factor : PLUS factor
+                  | MINUS factor
+                  | INTEGER
+                  | LPAREN expr RPAREN
+                  | variable
+        """
         token = self.token
         if token.type == TOKEN.PLUS:
             self.eat(TOKEN.PLUS)
             node = UnaryOp(token, self.factor())
-            return node
         elif token.type == TOKEN.MINUS:
             self.eat(TOKEN.MINUS)
             node = UnaryOp(token, self.factor())
-            return node
         elif token.type == TOKEN.INTEGER:
             self.eat(TOKEN.INTEGER)
-            return Num(token)
-        # elif token.type == TOKEN.LPAREN:
-        else:
+            node = Num(token)
+        elif token.type == TOKEN.LPAREN:
             self.eat(TOKEN.LPAREN)
             node = self.expr()
             self.eat(TOKEN.RPAREN)
-            return node
+        else:
+            node = self.variable()
+            
+        return node
 
     def term(self):
         """term: factor ( ( MUL | DIV ) factor )*"""
