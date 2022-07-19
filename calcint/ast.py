@@ -18,6 +18,7 @@ class Token(object):
         return f"{type(self).__name__}({self.type}, {self.value!r})"
 
 
+
 class AST(object):
     token: Token
     op: Token
@@ -30,6 +31,23 @@ class AST(object):
         self.value = token.value
         self.children = list(nodes)
 
+
+class Compound(AST):
+    """Represents a 'BEGIN ... END' block."""
+
+
+class Assign(AST):
+    def __init__(self, token: Token, var: 'Var', value) -> None:
+        super().__init__(token, var, value)
+
+
+class Var(AST):
+    def __init__(self, token) -> None:
+        super().__init__(token)
+
+
+class NoOp(AST):
+    """Represents an *empty* statement."""
 
 class UnaryOp(AST):
     def __init__(self, token, child: AST) -> None:
@@ -44,6 +62,7 @@ class BinOp(AST):
 class Num(AST):
     def __init__(self, token: Token) -> None:
         super().__init__(token)
+
 
 
 class NodeVisitor(object):
