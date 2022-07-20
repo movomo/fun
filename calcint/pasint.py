@@ -46,7 +46,7 @@ from enum import Enum, auto
 
 from ast import (
     AST,
-    Compound, Assign, Var,
+    Program, Block, VarDecl, Type, Compound, Assign, Var,
     NoOp, BinOp, UnaryOp, Num,
     Token, NodeVisitor,
 )
@@ -223,9 +223,17 @@ class Parser(object):
             self.error()
 
     def program(self):
-        """program : compound_statement DOT"""
-        node = self.compound_statement()
+        self.eat(TOKEN.PROGRAM)
+
+        var_node = self.variable()
+        name = var_node.value
+        self.eat(TOKEN.SEMI)
+
+        block_node = self.block()
+
+        program_node = Program(name, block_node)
         self.eat(TOKEN.DOT)
+
         return node
 
     def compound_statement(self):
