@@ -276,6 +276,15 @@ class Parser(object):
         var_decls = [VarDecl(var_node, type_node) for var_node in var_nodes]
         return var_decls
 
+    def type_spec(self):
+        token = self.token
+        if token.type == TOKEN.INTEGER:
+            self.eat(TOKEN.INTEGER)
+        else:
+            self.eat(TOKEN.REAL)
+        node = Type(token)
+        return node
+
     def compound_statement(self):
         """compound_statement : BEGIN statement_list END"""
         self.eat(TOKEN.BEGIN)
