@@ -1,22 +1,41 @@
 #! /usr/bin/env python3
 
 """
-program : compound_statement DOT
+program : PROGRAM variable SEMI block DOT
+
+block : declarations compound_statement
+
+declarations : VAR (variable_declaration SEMI)+
+             | empty
+
+variable_declaration : ID (COMMA ID)* COLON type_spec
+
+type_spec : INTEGER | REAL
+
 compound_statement : BEGIN statement_list END
+
 statement_list : statement
                | statement SEMI statement_list
+
 statement : compound_statement
           | assignment_statement
           | empty
+
 assignment_statement : variable ASSIGN expr
+
 empty :
-expr: term ((PLUS | MINUS) term)*
-term: factor ((MUL | DIV) factor)*
+
+expr : term ((PLUS | MINUS) term)*
+
+term : factor ((MUL | INTEGER_DIV | FLOAT_DIV) factor)*
+
 factor : PLUS factor
        | MINUS factor
-       | INTEGER
+       | INTEGER_CONST
+       | REAL_CONST
        | LPAREN expr RPAREN
        | variable
+
 variable: ID
 """
 
@@ -39,25 +58,36 @@ class CalcError(Exception):
 
 class TOKEN(Enum):
     EOF = auto()
+    PROGRAM = 'PROGRAM'
+    VAR = 'VAR'
     BEGIN = 'BEGIN'
     END = 'END'
     DOT = '.'
     SEMI = ';'
     EMPTY = auto()
     ASSIGN = ':='
-    INTEGER = auto()
+    INTEGER = 'INTEGER'
+    REAL = 'REAL'
+    INTEGER_CONST = auto()
+    REAL_CONST = auto()
+    ID = auto()
     LPAREN = '('
     RPAREN = ')'
     MUL = '*'
     DIV = '/'
+    INTEGER_DIV = 'DIV'
     PLUS = '+'
     MINUS = '-'
-    ID = auto()
 
 
 RESERVED_KEYWORDS = {
+    'PROGRAM': Token(TOKEN.PROGRAM),
+    'VAR': Token(TOKEN.VAR),
     'BEGIN': Token(TOKEN.BEGIN),
     'END': Token(TOKEN.END),
+    'INTEGER': Token(TOKEN.INTEGER),
+    'REAL': Token(TOKEN.REAL),
+    'DIV': Token(TOKEN.INTEGER_DIV),
 }
 
 
@@ -85,12 +115,28 @@ class Lexer(object):
         while self.char is not None and self.char.isspace():
             self.advance()
 
-    def integer(self):
+    def skip_comment(self):
+        while self.char != '}':
+            self.advance()
+        self.advance()
+
+    def number(self):
         result = []
         while self.char is not None and self.char.isdigit():
             result.append(self.char)
             self.advance()
-        return int(''.join(result))
+
+        if self.char == '.':
+            result.append(self.char)
+            self.advance()
+            while self.char is not None and self.char.isdigit():
+                result.append(self.char)
+                self.advance()
+            token = Token(TOKEN.REAL_CONST, float(''.join(result))
+        else:
+            token = Token(TOKEN.INTEGER_CONST, int(''.join(result))
+
+        return token
 
     def next(self) -> Token:
         while self.char is not None:
@@ -116,7 +162,7 @@ class Lexer(object):
                 self.advance()
 
             elif char.isdigit():
-                token = Token(TOKEN.INTEGER, self.integer())
+                token = self.number()
             elif char == '(':
                 token = Token(TOKEN.LPAREN, char)
                 self.advance()
