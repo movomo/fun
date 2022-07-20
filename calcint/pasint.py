@@ -253,6 +253,21 @@ class Parser(object):
 
         return decls
 
+    def variable_declaration(self):
+        var_nodes = [Var(self.token)]
+        self.eat(TOKEN.ID)
+
+        while self.token.type == TOKEN.COMMA:
+            self.eat(TOKEN.COMMA)
+            var_nodes.append(Var(self.token))
+            self.eat(TOKEN.ID)
+        self.eat(TOKEN.COLON)
+
+        type_node = self.type_spec()
+
+        var_decls = [VarDecl(var_node, type_node) for var_node in var_nodes]
+        return var_decls
+
     def compound_statement(self):
         """compound_statement : BEGIN statement_list END"""
         self.eat(TOKEN.BEGIN)
