@@ -236,6 +236,12 @@ class Parser(object):
 
         return node
 
+    def block(self):
+        declaration_nodes = self.declarations()
+        compound_statement_node = self.compound_statement()
+        node = Block(*declaration_nodes, compound_statement)
+        return node
+
     def compound_statement(self):
         """compound_statement : BEGIN statement_list END"""
         self.eat(TOKEN.BEGIN)
