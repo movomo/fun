@@ -156,11 +156,17 @@ class Lexer(object):
                 self.advance()
                 self.advance()
                 token = Token(TOKEN.ASSIGN)
+            elif char == ':':
+                token = Token(TOKEN.COLON)
+                self.advance()
             elif char == ';':
                 token = Token(TOKEN.SEMI)
                 self.advance()
             elif char == '.':
                 token = Token(TOKEN.DOT)
+                self.advance()
+            elif char == ',':
+                token = Token(TOKEN.COMMA)
                 self.advance()
 
             elif char.isdigit():
