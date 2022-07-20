@@ -32,7 +32,10 @@ class AST(object):
         self.children = list(nodes)
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self.token}, *{self.children})'
+        return f'{type(self).__name__}({self.token!r}, *{self.children!r})'
+
+    def __str__(self) -> str:
+        return f'{type(self).__name__}({self.value!r})'
 
 
 class Program(AST):
