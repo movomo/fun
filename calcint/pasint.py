@@ -242,6 +242,17 @@ class Parser(object):
         node = Block(*declaration_nodes, compound_statement)
         return node
 
+    def declarations(self):
+        decls = []
+        if self.token.type == TOKEN.VAR:
+            self.eat(TOKEN.VAR)
+            while self.token.type == TOKEN.ID:
+                var_decls = self.variable_declaration()
+                decls.extend(var_decls)
+                self.eat(TOKEN.SEMI)
+
+        return decls
+
     def compound_statement(self):
         """compound_statement : BEGIN statement_list END"""
         self.eat(TOKEN.BEGIN)
