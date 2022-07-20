@@ -416,6 +416,19 @@ class Interpreter(NodeVisitor):
     def interpret(self):
         return self.visit(self.parser.parse())
 
+    def visit_Program(self, node: AST):
+        self.visit(node.children[0])
+
+    def visit_Block(self, node: AST):
+        for child in node.children:
+            self.visit(child)
+
+    def visit_VarDecl(self, node: AST):
+        pass
+
+    def visit_Type(self, node: AST):
+        pass
+
     def visit_Compound(self, node: AST):
         for child in node.children:
             self.visit(child)
