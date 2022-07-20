@@ -35,6 +35,39 @@ class AST(object):
         return f'{type(self).__name__}({self.token}, *{self.children})'
 
 
+class Program(AST):
+    name: str
+
+    def __init__(self, name, node: AST) -> None:
+        self.token = self.op = self.value = None
+        self.name = name
+        self.children = [node]
+
+
+class Block(AST):
+    """Optional declarations followed by mandatory compound block.
+    """
+    def __init__(self, *nodes: T.Iterable[AST]) -> None:
+        """
+        :nodes:
+            Last node must be the compound statement.
+            All preceding it are declarations.
+        """
+        self.token = self.op = self.value = None
+        self.children = list(nodes)
+
+
+class VarDecl(AST):
+    def __init__(self, var_node: 'Var', type_node: 'Type') -> None:
+        self.token = self.op = self.value = None
+        self.children = [var_node, type_node]
+
+
+class Type(AST):
+    def __init__(self, token) -> None:
+        super().__init__(token)
+
+
 class Compound(AST):
     """Represents a 'BEGIN ... END' block."""
     def __init__(self, *nodes: T.Iterable[AST]) -> None:
