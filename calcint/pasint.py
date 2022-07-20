@@ -339,32 +339,6 @@ class Parser(object):
         """"""
         return NoOp()
 
-    def factor(self):
-        """factor : PLUS factor
-                  | MINUS factor
-                  | INTEGER
-                  | LPAREN expr RPAREN
-                  | variable
-        """
-        token = self.token
-        if token.type == TOKEN.PLUS:
-            self.eat(TOKEN.PLUS)
-            node = UnaryOp(token, self.factor())
-        elif token.type == TOKEN.MINUS:
-            self.eat(TOKEN.MINUS)
-            node = UnaryOp(token, self.factor())
-        elif token.type == TOKEN.INTEGER:
-            self.eat(TOKEN.INTEGER)
-            node = Num(token)
-        elif token.type == TOKEN.LPAREN:
-            self.eat(TOKEN.LPAREN)
-            node = self.expr()
-            self.eat(TOKEN.RPAREN)
-        else:
-            node = self.variable()
-
-        return node
-
     def expr(self):
         node = self.term()
         while self.token.type in {TOKEN.PLUS, TOKEN.MINUS}:
@@ -396,6 +370,29 @@ class Parser(object):
                     self.eat(TOKEN.FLOAT_DIV)
 
             node = BinOp(token, node, self.factor())
+
+        return node
+
+    def factor(self):
+        token = self.token
+        if token.type == TOKEN.PLUS:
+            self.eat(TOKEN.PLUS)
+            node = UnaryOp(token, self.factor())
+        elif token.type == TOKEN.MINUS:
+            self.eat(TOKEN.MINUS)
+            node = UnaryOp(token, self.factor())
+        elif token.type == TOKEN.INTEGER_CONST:
+            self.eat(TOKEN.INTEGER_CONST)
+            node = Num(token)
+        elif token.type == TOKEN.REAL_CONST:
+            self.eat(TOKEN.REAL_CONST)
+            node = Num(token)
+        elif token.type == TOKEN.LPAREN:
+            self.eat(TOKEN.LPAREN)
+            node = self.expr()
+            self.eat(TOKEN.RPAREN)
+        else:
+            node = self.variable()
 
         return node
 
