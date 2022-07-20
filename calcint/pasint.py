@@ -328,10 +328,11 @@ class Parser(object):
 
     def assignment_statement(self):
         """assignment_statement : variable ASSIGN expr"""
+        token = self.token
         left = self.variable()
         self.eat(TOKEN.ASSIGN)
         right = self.expr()
-        node = Assign(self.token, left, right)
+        node = Assign(token, left, right)
         return node
 
     def variable(self):
