@@ -76,7 +76,7 @@ class TOKEN(Enum):
     LPAREN = '('
     RPAREN = ')'
     MUL = '*'
-    DIV = '/'
+    FLOAT_DIV = '/'
     INTEGER_DIV = 'DIV'
     PLUS = '+'
     MINUS = '-'
@@ -181,7 +181,7 @@ class Lexer(object):
                 token = Token(TOKEN.MUL, char)
                 self.advance()
             elif char == '/':
-                token = Token(TOKEN.DIV, char)
+                token = Token(TOKEN.FLOAT_DIV, char)
                 self.advance()
             elif char == '+':
                 token = Token(TOKEN.PLUS, char)
@@ -365,29 +365,7 @@ class Parser(object):
 
         return node
 
-    def term(self):
-        """term: factor ( ( MUL | DIV ) factor )*"""
-        node = self.factor()
-        while self.token.type in {TOKEN.MUL, TOKEN.DIV}:
-            token = self.token
-
-            match token.type:
-                case TOKEN.MUL:
-                    self.eat(TOKEN.MUL)
-                case TOKEN.DIV:
-                    self.eat(TOKEN.DIV)
-
-            node = BinOp(token, node, self.factor())
-
-        return node
-
     def expr(self):
-        """expr: term ( ( PLUS | MINUS ) term )*
-
-        expr: term ( ( PLUS | MINUS ) term )*
-        term: factor ( ( MUL | DIV ) factor )*
-        factor: ( PLUS | MINUS ) factor | INTEGER | ( LPAREN expr RPAREN)
-        """
         node = self.term()
         while self.token.type in {TOKEN.PLUS, TOKEN.MINUS}:
             token = self.token
@@ -399,6 +377,25 @@ class Parser(object):
                     self.eat(TOKEN.MINUS)
 
             node = BinOp(token, node, self.term())
+
+        return node
+
+    def term(self):
+        node = self.factor()
+        while self.token.type in {
+            TOKEN.MUL, TOKEN.INTEGER_DIV, TOKEN.FLOAT_DIV
+        }:
+            token = self.token
+
+            match token.type:
+                case TOKEN.MUL:
+                    self.eat(TOKEN.MUL)
+                case TOKEN.INTEGER_DIV:
+                    self.eat(TOKEN.INTEGER_DIV)
+                case TOKEN.FLOAT_DIV:
+                    self.eat(TOKEN.FLOAT_DIV)
+
+            node = BinOp(token, node, self.factor())
 
         return node
 
@@ -457,7 +454,7 @@ class Interpreter(NodeVisitor):
                 return left - right
             case TOKEN.MUL:
                 return left * right
-            case TOKEN.DIV:
+            case TOKEN.FLOAT_DIV:
                 return left / right
 
     def visit_Num(self, node: Num) -> int:
