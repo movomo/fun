@@ -39,10 +39,12 @@ factor : PLUS factor
 variable: ID
 """
 
+import sys
 import traceback
 import typing as T
 
 from enum import Enum, auto
+from pathlib import Path
 
 from ast import (
     AST,
@@ -479,5 +481,22 @@ def main():
             print(result)
 
 
+def script(path):
+    with Path(path).open('r', encoding='utf-8') as text_in:
+        text = text_in.read()
+    try:
+        lexer = Lexer(text)
+        parser = Parser(lexer)
+        interpreter = Interpreter(parser)
+        result = interpreter.interpret()
+    except CalcError as why:
+        traceback.print_exception(why)
+    else:
+        print(result)
+
+
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) == 1:
+        main()
+    else:
+        script(sys.argv[1])
