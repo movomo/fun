@@ -63,7 +63,9 @@ class TOKEN(Enum):
     BEGIN = 'BEGIN'
     END = 'END'
     DOT = '.'
+    COMMA = ','
     SEMI = ';'
+    COLON = ':'
     EMPTY = auto()
     ASSIGN = ':='
     INTEGER = 'INTEGER'
