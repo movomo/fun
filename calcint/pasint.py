@@ -136,9 +136,9 @@ class Lexer(object):
             while self.char is not None and self.char.isdigit():
                 result.append(self.char)
                 self.advance()
-            token = Token(TOKEN.REAL_CONST, float(''.join(result))
+            token = Token(TOKEN.REAL_CONST, float(''.join(result)))
         else:
-            token = Token(TOKEN.INTEGER_CONST, int(''.join(result))
+            token = Token(TOKEN.INTEGER_CONST, int(''.join(result)))
 
         return token
 
@@ -146,6 +146,9 @@ class Lexer(object):
         while self.char is not None:
             if self.char.isspace():
                 self.skip_whitespace()
+                continue
+            if self.char == '{':
+                self.skip_comment()
                 continue
 
             token = None
@@ -244,12 +247,12 @@ class Parser(object):
         program_node = Program(name, block_node)
         self.eat(TOKEN.DOT)
 
-        return node
+        return program_node
 
     def block(self):
         declaration_nodes = self.declarations()
         compound_statement_node = self.compound_statement()
-        node = Block(*declaration_nodes, compound_statement)
+        node = Block(*declaration_nodes, compound_statement_node)
         return node
 
     def declarations(self):
@@ -466,6 +469,8 @@ class Interpreter(NodeVisitor):
                 return left - right
             case TOKEN.MUL:
                 return left * right
+            case TOKEN.INTEGER_DIV:
+                return left // right
             case TOKEN.FLOAT_DIV:
                 return left / right
 
@@ -505,6 +510,7 @@ def script(path):
     except CalcError as why:
         traceback.print_exception(why)
     else:
+        print(interpreter.GLOBAL_SCOPE)
         print(result)
 
 
